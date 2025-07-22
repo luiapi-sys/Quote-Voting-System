@@ -5,9 +5,7 @@
     "private": true,
     "workspaces": [
         "packages/*"
-    ], git config --global user.email "you@example.com"
-  git config --global user.name "Your Name"
-
+    ],
     "scripts": {
         "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
         "dev:frontend": "npm run dev –workspace=packages/frontend",

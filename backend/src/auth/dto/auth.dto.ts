@@ -14,7 +14,7 @@ export class LoginDto {
 }
 
 export class RegisterDto extends LoginDto {
-  @ApiProperty({ example: "johndoe" })
+  @ApiProperty({ example: "testuser" })
   @IsString()
   @MinLength(3)
   username: string;

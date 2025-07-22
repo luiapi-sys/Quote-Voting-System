@@ -28,8 +28,6 @@ model Quote {
     id         String   @id @default(auto()) @map("_id") @db.ObjectId
     content    String
     author     String?
-    category   String?
-    tags       String[]
     isActive   Boolean  @default(true)
     totalVotes Int      @default(0)
     createdAt  DateTime @default(now())

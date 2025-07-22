@@ -15,9 +15,7 @@ export class QuotesService {
   }
 
   async findAll(queryDto: QueryQuotesDto) {
-    const { search, category, tags, sortBy, sortOrder } = queryDto;
-    const page = 1;
-    const limit = 10;
+    const { page = 1, limit = 10, search, sortBy, sortOrder } = queryDto;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -25,15 +23,6 @@ export class QuotesService {
 
     if (search) {
       where.OR = [{ content: { contains: search, mode: "insensitive" } }, { author: { contains: search, mode: "insensitive" } }];
-    }
-
-    if (category) {
-      where.category = { contains: category, mode: "insensitive" };
-    }
-
-    if (tags) {
-      const tagArray = tags.split(",").map((tag) => tag.trim());
-      where.tags = { hasSome: tagArray };
     }
 
     // Build orderBy clause

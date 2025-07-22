@@ -12,17 +12,6 @@ export class CreateQuoteDto {
   @IsOptional()
   @IsString()
   author?: string;
-
-  @ApiPropertyOptional({ example: "Life" })
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional({ example: ["wisdom", "life", "planning"] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
 }
 
 export class UpdateQuoteDto {
@@ -35,17 +24,6 @@ export class UpdateQuoteDto {
   @IsOptional()
   @IsString()
   author?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -72,16 +50,6 @@ export class QueryQuotesDto {
   @IsOptional()
   @IsString()
   search?: string;
-
-  @ApiPropertyOptional({ example: "wisdom" })
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional({ example: "wisdom,life" })
-  @IsOptional()
-  @IsString()
-  tags?: string;
 
   @ApiPropertyOptional({ example: "createdAt", enum: ["createdAt", "totalVotes", "content"] })
   @IsOptional()

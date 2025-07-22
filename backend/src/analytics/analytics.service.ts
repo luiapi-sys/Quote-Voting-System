@@ -6,7 +6,7 @@ export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getVoteAnalytics() {
-    const [totalQuotes, totalVotes, totalUsers, topVotedQuotes, voteDistribution, categoryStats, dailyVotes] = await Promise.all([
+    const [totalQuotes, totalVotes, totalUsers, topVotedQuotes, voteDistribution, dailyVotes] = await Promise.all([
       // Total quotes
       this.prisma.quote.count({ where: { isActive: true } }),
 
@@ -21,21 +21,11 @@ export class AnalyticsService {
         where: { isActive: true },
         orderBy: { totalVotes: "desc" },
         take: 10,
-        select: { id: true, content: true, author: true, totalVotes: true, category: true, createdBy: { select: { username: true } } }
+        select: { id: true, content: true, author: true, totalVotes: true, createdBy: { select: { username: true } } }
       }),
 
       // Vote distribution (upvotes vs downvotes)
       this.prisma.vote.groupBy({ by: ["value"], _count: { value: true } }),
-
-      // Category statistics
-      this.prisma.quote.groupBy({
-        by: ["category"],
-        where: { isActive: true, category: { not: null } },
-        _count: { category: true },
-        _sum: { totalVotes: true },
-        orderBy: { _count: { category: "desc" } },
-        take: 10
-      }),
 
       // Daily votes for the last 30 days
       this.getDailyVotes()
@@ -45,11 +35,6 @@ export class AnalyticsService {
       overview: { totalQuotes, totalVotes, totalUsers, averageVotesPerQuote: totalQuotes > 0 ? totalVotes / totalQuotes : 0 },
       topVotedQuotes,
       voteDistribution: voteDistribution.map((item) => ({ type: item.value === 1 ? "upvotes" : "downvotes", count: item._count.value })),
-      categoryStats: categoryStats.map((item) => ({
-        category: item.category || "Uncategorized",
-        quoteCount: item._count.category,
-        totalVotes: item._sum.totalVotes || 0
-      })),
       dailyVotes
     };
   }
@@ -92,7 +77,7 @@ export class AnalyticsService {
   }
 
   async getQuoteAnalytics() {
-    const [quotesWithoutVotes, mostActiveUsers, tagPopularity, monthlyQuotes] = await Promise.all([
+    const [quotesWithoutVotes, mostActiveUsers, monthlyQuotes] = await Promise.all([
       // Quotes without votes
       this.prisma.quote.count({ where: { isActive: true, totalVotes: 0 } }),
 
@@ -103,9 +88,6 @@ export class AnalyticsService {
         take: 10
       }),
 
-      // Tag popularity
-      this.getTagPopularity(),
-
       // Monthly quote creation
       this.getMonthlyQuotes()
     ]);
@@ -113,31 +95,8 @@ export class AnalyticsService {
     return {
       quotesWithoutVotes,
       mostActiveUsers: mostActiveUsers.map((user) => ({ username: user.username, quoteCount: user._count.quotes })),
-      tagPopularity,
       monthlyQuotes
     };
-  }
-
-  private async getTagPopularity() {
-    const quotes = await this.prisma.quote.findMany({ where: { isActive: true }, select: { tags: true, totalVotes: true } });
-
-    const tagStats = quotes.reduce(
-      (acc: any, quote: any) => {
-        quote.tags.forEach((tag) => {
-          if (!acc[tag]) {
-            acc[tag] = { tag, count: 0, totalVotes: 0 };
-          }
-          acc[tag].count++;
-          acc[tag].totalVotes += quote.totalVotes;
-        });
-        return acc;
-      },
-      {} as Record<string, any>
-    );
-
-    return Object.values(tagStats)
-      .sort((a: any, b: any) => b.count - a.count)
-      .slice(0, 15);
   }
 
   private async getMonthlyQuotes() {

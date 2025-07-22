@@ -24,8 +24,6 @@ export class QuotesController {
   @ApiQuery({ name: "page", required: false, type: Number })
   @ApiQuery({ name: "limit", required: false, type: Number })
   @ApiQuery({ name: "search", required: false, type: String })
-  @ApiQuery({ name: "category", required: false, type: String })
-  @ApiQuery({ name: "tags", required: false, type: String })
   @ApiQuery({ name: "sortBy", required: false, type: String })
   @ApiQuery({ name: "sortOrder", required: false, enum: ["asc", "desc"] })
   findAll(@Query() query: QueryQuotesDto) {
