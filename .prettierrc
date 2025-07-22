@@ -1,0 +1,10 @@
+{
+  "trailingComma": "none",
+  "semi": true,
+  "singleQuote": false,
+  "singleAttributePerLine": true,
+  "objectWrap": "collapse",
+  "arrowParens": "always",
+  "ignored": false,
+  "inferredParser": "typescript"
+}
