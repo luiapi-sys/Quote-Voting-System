@@ -1,11 +1,10 @@
-// src/auth/jwt.strategy.ts
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "../prisma/prisma.service";
 
 export interface JwtPayload {
-  userId: string;
+  userId: number;
   email: string;
   username: string;
 }
@@ -16,15 +15,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || "super-secret-key"
+      secretOrKey: process.env.JWT_SECRET || "YOUR_DEFAULT_SECRET_KEY"
     });
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.prisma.user.findUnique({ where: { id: payload.userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.userId }
+    });
+
     if (!user) {
       throw new UnauthorizedException("Invalid token");
     }
-    return user;
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 }

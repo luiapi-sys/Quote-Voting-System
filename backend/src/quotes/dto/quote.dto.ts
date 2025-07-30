@@ -1,26 +1,44 @@
-// src/quotes/dto/quote.dto.ts
-import { IsString, IsOptional, IsArray, IsBoolean, IsInt, Min } from "class-validator";
-import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  MaxLength,
+  IsInt,
+  IsBoolean,
+  Min,
+  Max
+} from "class-validator";
 
 export class CreateQuoteDto {
-  @ApiProperty({ example: "Life is what happens when you are busy making other plans." })
+  @ApiProperty({
+    description: "The content of the quote",
+    example: "The only way to do great work is to love what you do."
+  })
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(500)
   content: string;
 
-  @ApiPropertyOptional({ example: "John Lennon" })
-  @IsOptional()
+  @ApiProperty({
+    description: "The author of the quote (optional)",
+    example: "Steve Jobs",
+    required: false
+  })
   @IsString()
+  @IsOptional()
+  @MaxLength(100)
   author?: string;
 }
 
 export class UpdateQuoteDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: "Update content" })
   @IsOptional()
   @IsString()
   content?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: "Update author" })
   @IsOptional()
   @IsString()
   author?: string;
@@ -31,27 +49,32 @@ export class UpdateQuoteDto {
   isActive?: boolean;
 }
 
-export class QueryQuotesDto {
-  @ApiPropertyOptional({ example: 1, minimum: 1 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @ApiPropertyOptional({ example: 10, minimum: 1 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
-
-  @ApiPropertyOptional({ example: "life" })
+export class QueryQuoteDto {
+  @ApiPropertyOptional({ description: "Search keyword in quote content" })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ example: "createdAt", enum: ["createdAt", "totalVotes", "content"] })
+  @ApiPropertyOptional({ example: 1, minimum: 1, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10, minimum: 1, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  limit?: number;
+
+  @ApiPropertyOptional({
+    example: "createdAt",
+    enum: ["createdAt", "totalVotes", "content"],
+    default: "createdAt"
+  })
   @IsOptional()
   @IsString()
   sortBy?: string = "createdAt";
@@ -59,5 +82,5 @@ export class QueryQuotesDto {
   @ApiPropertyOptional({ example: "desc", enum: ["asc", "desc"] })
   @IsOptional()
   @IsString()
-  sortOrder?: "asc" | "desc" = "desc";
+  sortOrder?: string = "desc";
 }

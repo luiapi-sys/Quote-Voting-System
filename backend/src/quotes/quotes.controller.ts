@@ -1,55 +1,66 @@
-// src/quotes/quotes.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Delete,
+  Request,
+  Query,
+  UseGuards,
+  ParseIntPipe
+} from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { QuotesService } from "./quotes.service";
-import { CreateQuoteDto, UpdateQuoteDto, QueryQuotesDto } from "./dto/quote.dto";
+import { QueryQuoteDto, CreateQuoteDto, UpdateQuoteDto } from "./dto/quote.dto";
+import { ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 
-@ApiTags("Quotes")
-@Controller("quotes")
-@UseGuards(AuthGuard("jwt"))
 @ApiBearerAuth()
+@UseGuards(AuthGuard("jwt"))
+@Controller("quotes")
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
   @Post()
   @ApiOperation({ summary: "Create a new quote" })
-  @ApiResponse({ status: 201, description: "Quote created successfully" })
-  create(@Request() req, @Body() createQuoteDto: CreateQuoteDto) {
-    return this.quotesService.create(req.user.id, createQuoteDto);
+  @ApiResponse({
+    status: 201,
+    description: "The quote has been successfully created."
+  })
+  create(@Body() createQuoteDto: CreateQuoteDto, @Request() req) {
+    return this.quotesService.create(createQuoteDto, req.user.id);
   }
 
   @Get()
-  @ApiOperation({ summary: "Get all quotes with pagination and filters" })
-  @ApiQuery({ name: "page", required: false, type: Number })
-  @ApiQuery({ name: "limit", required: false, type: Number })
-  @ApiQuery({ name: "search", required: false, type: String })
-  @ApiQuery({ name: "sortBy", required: false, type: String })
-  @ApiQuery({ name: "sortOrder", required: false, enum: ["asc", "desc"] })
-  findAll(@Query() query: QueryQuotesDto) {
-    return this.quotesService.findAll(query);
+  @ApiOperation({ summary: "Get a list of all active quotes" })
+  findAll(@Query() query: QueryQuoteDto, @Request() req) {
+    return this.quotesService.findAll(query, req.user.id);
   }
 
   @Get(":id")
-  @ApiOperation({ summary: "Get a quote by ID" })
-  @ApiResponse({ status: 200, description: "Quote found" })
-  @ApiResponse({ status: 404, description: "Quote not found" })
-  findOne(@Param("id") id: string) {
-    return this.quotesService.findOne(id);
+  @ApiOperation({ summary: "Get a single quote by ID" })
+  @ApiResponse({ status: 404, description: "Quote not found." })
+  findOne(@Param("id", ParseIntPipe) id: number, @Request() req) {
+    return this.quotesService.findOne(id, req.user.id);
   }
 
   @Patch(":id")
-  @ApiOperation({ summary: "Update a quote (only if no votes exist)" })
+  @ApiOperation({ summary: "Update a quote (only if no votes)" })
   @ApiResponse({ status: 200, description: "Quote updated successfully" })
-  @ApiResponse({ status: 403, description: "Cannot edit quote with votes" })
-  update(@Param("id") id: string, @Request() req, @Body() updateQuoteDto: UpdateQuoteDto) {
-    return this.quotesService.update(id, req.user.id, updateQuoteDto);
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateQuoteDto: UpdateQuoteDto,
+    @Request() req
+  ) {
+    return this.quotesService.update(id, updateQuoteDto, req.user);
   }
 
   @Delete(":id")
-  @ApiOperation({ summary: "Delete a quote" })
-  @ApiResponse({ status: 200, description: "Quote deleted successfully" })
-  remove(@Param("id") id: string, @Request() req) {
-    return this.quotesService.remove(id, req.user.id);
+  @ApiOperation({
+    summary: "Delete a quote (Soft delete for user, Hard delete for admin)"
+  })
+  remove(@Param("id", ParseIntPipe) id: number, @Request() req) {
+    return this.quotesService.remove(id, req.user);
   }
 }
